@@ -1,0 +1,11 @@
+CXX := g++
+CXXFLAGS := -std=c++11 -Wall -I$(shell brew --prefix nlohmann-json)/include
+SOURCES := main.cpp
+OBJECTS := $(SOURCES:.cpp=.o)
+
+all: $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o main $^
+
+clean:
+	rm -f main $(OBJECTS)
+
