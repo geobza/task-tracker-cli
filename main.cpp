@@ -24,29 +24,46 @@
 #include <string>
 #include <ctime>
 #include <stdio.h>
+#include <utility>
 #include "Task.h"
 
 using json = nlohmann::json;
 
 
-static const std::string commands[] = {"add", "update", "delete", "mark-in-progress", "mark-done", "list"};
+static const std::pair<std::string, int> commands[] = {{"add", 3}, {"update", 4}, {"delete", 3}, {"mark-in-progress", 3}, {"mark-done", 3}, {"list", 3}};
 
 bool error_checking(int argc, char *argv[]) {
+    bool valid_action = false;
+    bool valid_specifier;
+    int threshold = -1;
     try {
-        if (argc > 3) {
-            throw "Error, too many args. \n";
-        }
+
         if (argc < 2) { // didn't specify any command
             throw "Error, unspecified arg. \n";
         }
-        if (argc >= 2) { // check if action + specifier can be used
+
+        if (argc >= 2) {
+
+            // check if action is valid
             std::string action = std::string(argv[1]);
-            for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
-                if (action == commands[i]) {
-                    return true;
+            for (const auto& cmd : commands) {
+                if (action == cmd.first) {
+                    valid_action = true;
+                    threshold = cmd.second;
+
                 }
             }
-            throw "Error, illegal arg. \n";
+            if (valid_action == false) {
+                throw "Error, illegal arg. \n";
+            }
+
+            // check if argc isn't above the allowed amount of specifiers
+            if (threshold != -1 && argc > threshold) {
+                throw "Error, too many args. \n";
+            }
+
+            // check if specifiers is valid
+
         }
     } catch (const char* msg) {
         std::cout << msg;
@@ -54,12 +71,23 @@ bool error_checking(int argc, char *argv[]) {
     return false;
 }
 
+void print_info(int argc, char *argv[]) {
+    std::cout << "[DEBUGGING INFORMATION]" << std::endl;
+    std::cout << "[ARG COUNT]: " << argc << std::endl;
+    for (int i = 0; i < argc; i++) {
+        std::cout << "[ARG (" << i << ")]: " << argv[i] << std::endl;
+    }
+}
+
 
 int main(int argc, char *argv[]) {
+
+    print_info(argc, argv);
 
     if (error_checking(argc, argv)) {
 
         std::string action = std::string(argv[1]);
+
 
         if (action == "add") {
 
@@ -86,4 +114,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
