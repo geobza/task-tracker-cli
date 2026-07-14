@@ -44,18 +44,25 @@ struct Command {
     SpecifierType expected_specifier;
 };
 
-/*
-static const Command commands[] = {
-    {"add", 3, SpecifierType::FREE_TEXT}, // no specifier meaning
-    {"update", 4, SpecifierType::TASK_ID}, //
-    {"delete", 3, SpecifierType::TASK_ID},
-    {"mark-in-progress", 3, SpecifierType::TASK_ID},
-    {"mark-done", 3, SpecifierType::TASK_ID},
-    {"list", 2, SpecifierType::STATUS}
+static const std::unordered_map<std::string, Command> commands = {
+    {"add",               {"add", 3, SpecifierType::FREE_TEXT}},
+    {"update",            {"update", 4, SpecifierType::TASK_ID}},
+    {"delete",            {"delete", 3, SpecifierType::TASK_ID}},
+    {"mark-in-progress",  {"mark-in-progress", 3, SpecifierType::TASK_ID}},
+    {"mark-done",         {"mark-done", 3, SpecifierType::TASK_ID}},
+    {"list",              {"list", 2, SpecifierType::STATUS}},
 };
-*/
 
-static const std::map<std::string, int> commands = {{"add", 3}, {"update", 4}, {"delete", 3}, {"mark-in-progress", 3}, {"mark-done", 3}, {"list", 2}};
+
+//static const std::map<std::string, int> commands = {{"add", 3}, {"update", 4}, {"delete", 3}, {"mark-in-progress", 3}, {"mark-done", 3}, {"list", 2}};
+
+/* HELPER FUNCTIONS
+ *
+ *
+ *
+ *
+ *
+ */
 
 
 bool validate_specifier(SpecifierType type, const std::string& specifier) {
@@ -76,16 +83,22 @@ bool validate_specifier(SpecifierType type, const std::string& specifier) {
     return false;
 }
 
-bool error_checking(int argc, char *argv[]) {
-    bool valid_action = false;
-    bool valid_specifier;
+const Command* find_command(const std::string& name) {
+    auto it = commands.find(name);
+    if (it != commands.end()) {
+        return &(it->second);
+    }
+    return nullptr;
+}
+
+bool error_checking(int argc, char *argv[]) {;
     int threshold = -1;
     try {
 
         if (argc == 1) { // didn't specify any command (doesn't work for list)
             std::cout << "Valid Commands: " << std::endl;
             for (const auto& cmd: commands) {
-                std::cout << cmd.first << std::endl;
+                std::cout << cmd.second.name << std::endl;
             }
             throw "Error, unspecified command. \n";
         }
@@ -93,20 +106,17 @@ bool error_checking(int argc, char *argv[]) {
         if (argc >=2) {
 
             std::string action = std::string(argv[1]);  // check if action is valid
-            for (const auto& cmd : commands) {
-                if (action == cmd.first) {
-                    valid_action = true;
-                    threshold = cmd.second;
+            const Command* cmd = find_command(action);
 
-                }
-            }
-            if (valid_action == false) { // invalid action
+            if (cmd == nullptr) {
                 throw "Error, illegal action. \n";
             }
-            if (argc < threshold) { // check if specified
+            threshold = cmd->argc_threshold;
+
+            if (argc < threshold) {
                 throw "Error, unspecified sub-actions. \n";
             }
-            if (threshold != -1 && argc > threshold) { // check if argc isn't above the allowed amount of specifiers
+            if (argc > threshold) {
                 throw "Error, too many args. \n";
             }
         }
@@ -116,11 +126,24 @@ bool error_checking(int argc, char *argv[]) {
     return false;
 }
 
+
+
 void print_info(int argc, char *argv[]) {
     std::cout << "[DEBUGGING INFORMATION]" << std::endl;
     std::cout << "[ARG COUNT]: " << argc << std::endl;
+    std::string action;
     for (int i = 0; i < argc; i++) {
         std::cout << "[ARG (" << i << ")]: " << argv[i] << std::endl;
+        if (i == 1) {
+            action = std::string(argv[i]);
+            auto it = commands.find(action);
+            if (it != commands.end()) {
+                const Command& cmd = it->second;
+                std::cout << "[COMMAND NAME: " << cmd.name << "]" << std::endl;
+                std::cout << "[COMMAND ARGC_THRESHOLD: " << cmd.argc_threshold << "]" << std::endl;
+                std::cout << "[COMMAND EXPECTED_SPECIFIER " << cmd.expected_specifier << "]" << std::endl;
+            }
+        }
     }
 }
 
