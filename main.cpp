@@ -26,11 +26,55 @@
 #include <stdio.h>
 #include <utility>
 #include "Task.h"
+#include <map>
 
 using json = nlohmann::json;
 
 
-static const std::pair<std::string, int> commands[] = {{"add", 3}, {"update", 4}, {"delete", 3}, {"mark-in-progress", 3}, {"mark-done", 3}, {"list", 3}};
+enum class SpecifierType {
+    NONE,
+    FREE_TEXT,
+    TASK_ID,
+    STATUS
+};
+
+struct Command {
+    std::string name;
+    int argc_threshold;
+    SpecifierType expected_specifier;
+};
+
+/*
+static const Command commands[] = {
+    {"add", 3, SpecifierType::FREE_TEXT}, // no specifier meaning
+    {"update", 4, SpecifierType::TASK_ID}, //
+    {"delete", 3, SpecifierType::TASK_ID},
+    {"mark-in-progress", 3, SpecifierType::TASK_ID},
+    {"mark-done", 3, SpecifierType::TASK_ID},
+    {"list", 2, SpecifierType::STATUS}
+};
+*/
+
+static const std::map<std::string, int> commands = {{"add", 3}, {"update", 4}, {"delete", 3}, {"mark-in-progress", 3}, {"mark-done", 3}, {"list", 2}};
+
+
+bool validate_specifier(SpecifierType type, const std::string& specifier) {
+    switch (type) {
+        case SpecifierType::NONE:
+            return true;
+
+        case SpecifierType::FREE_TEXT:
+            return !specifier.empty();
+
+        case SpecifierType::TASK_ID:
+            // would need: is this parseable as a number? does a task with this ID exist?
+            return false; // placeholder
+
+        case SpecifierType::STATUS:
+            return (specifier == "done" || specifier == "todo" || specifier == "in-progress");
+    }
+    return false;
+}
 
 bool error_checking(int argc, char *argv[]) {
     bool valid_action = false;
@@ -38,14 +82,17 @@ bool error_checking(int argc, char *argv[]) {
     int threshold = -1;
     try {
 
-        if (argc < 2) { // didn't specify any command
-            throw "Error, unspecified arg. \n";
+        if (argc == 1) { // didn't specify any command (doesn't work for list)
+            std::cout << "Valid Commands: " << std::endl;
+            for (const auto& cmd: commands) {
+                std::cout << cmd.first << std::endl;
+            }
+            throw "Error, unspecified command. \n";
         }
 
-        if (argc >= 2) {
+        if (argc >=2) {
 
-            // check if action is valid
-            std::string action = std::string(argv[1]);
+            std::string action = std::string(argv[1]);  // check if action is valid
             for (const auto& cmd : commands) {
                 if (action == cmd.first) {
                     valid_action = true;
@@ -53,17 +100,15 @@ bool error_checking(int argc, char *argv[]) {
 
                 }
             }
-            if (valid_action == false) {
-                throw "Error, illegal arg. \n";
+            if (valid_action == false) { // invalid action
+                throw "Error, illegal action. \n";
             }
-
-            // check if argc isn't above the allowed amount of specifiers
-            if (threshold != -1 && argc > threshold) {
+            if (argc < threshold) { // check if specified
+                throw "Error, unspecified sub-actions. \n";
+            }
+            if (threshold != -1 && argc > threshold) { // check if argc isn't above the allowed amount of specifiers
                 throw "Error, too many args. \n";
             }
-
-            // check if specifiers is valid
-
         }
     } catch (const char* msg) {
         std::cout << msg;
@@ -87,14 +132,16 @@ int main(int argc, char *argv[]) {
     if (error_checking(argc, argv)) {
 
         std::string action = std::string(argv[1]);
+        std::string specifier = std::string(argv[2]);
 
 
         if (action == "add") {
 
-            std::cout << "Task added successfully (ID: " << ")" << std::endl;
+            std::cout << "[SUCCESS]: Task added successfully (ID: " << ")" << std::endl;
             return 0;
 
         if (action == "update") {
+
 
         }
         if (action == "delete") {
@@ -107,6 +154,20 @@ int main(int argc, char *argv[]) {
 
         }
         if (action == "list") {
+            if (argc == 2) { // sub-specifier exists
+                if (specifier == "done") {
+
+                }
+                if (specifier == "todo") {
+
+                }
+                if (specifier == "in-progress") {
+
+                }
+            } else { // no specifier, default behaviour == just list all
+
+            }
+
 
         }
         }
