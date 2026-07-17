@@ -22,6 +22,7 @@
 //#include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
+#include <ofstream>
 #include <string>
 #include <ctime>
 #include <stdio.h>
@@ -164,6 +165,7 @@ int main(int argc, char *argv[]) {
 
         std::string action = std::string(argv[1]);
         std::string specifier = (argc > 2) ? std::string(argv[2]) : std::string();
+        json data = load_tasks("task-tracking.json");
 
 
         if (action == "add") {
@@ -186,17 +188,13 @@ int main(int argc, char *argv[]) {
         }
         if (action == "list") {
             if (argc > 2) { // sub-specifier exists
-                if (specifier == "done") {
+                for (const& auto task: data.at("tasks") [
+                    if (task.at("status").get<std::string>() != specifier) continue;
+                    std::cout << "[" << task.at("id") << "] "
+                    << task.at("description").get<std::string>() << std::endl;
+                ]
 
-                }
-                if (specifier == "todo") {
-
-                }
-                if (specifier == "in-progress") {
-
-                }
             } else { // no specifier, default behaviour == just list all
-                json data = load_tasks("task-tracking.json");
                 for (const auto& task: data.at("tasks")) {
                     std::cout << "[" << task.at("id") << "] "
                         << task.at("description")
