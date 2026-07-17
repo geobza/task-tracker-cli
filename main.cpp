@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <utility>
 #include "Task.h"
-#include <map>
+#include <unordered_map>
 
 //using json = nlohmann::json;
 
@@ -141,7 +141,7 @@ void print_info(int argc, char *argv[]) {
                 const Command& cmd = it->second;
                 std::cout << "[COMMAND NAME: " << cmd.name << "]" << std::endl;
                 std::cout << "[COMMAND ARGC_THRESHOLD: " << cmd.argc_threshold << "]" << std::endl;
-                std::cout << "[COMMAND EXPECTED_SPECIFIER " << cmd.expected_specifier << "]" << std::endl;
+                //std::cout << "[COMMAND EXPECTED_SPECIFIER " << cmd.expected_specifier << "]" << std::endl;
             }
         }
     }
