@@ -22,7 +22,7 @@
 //#include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
-#include <ofstream>
+#include <ostream>
 #include <string>
 #include <ctime>
 #include <stdio.h>
@@ -33,7 +33,7 @@
 
 using json = nlohmann::json;
 
-json load_tasks(const std::string& filepath) {
+json load_tasks(const std::string& filepath) { // load the json file
     std::ifstream in(filepath);
     if (!in.is_open()) {
         json j;
@@ -187,12 +187,12 @@ int main(int argc, char *argv[]) {
 
         }
         if (action == "list") {
-            if (argc > 2) { // sub-specifier exists
-                for (const& auto task: data.at("tasks") [
+            if (argc > 2) { // sub-specifier exists, match and loop
+                for (const auto& task: data.at("tasks")) {
                     if (task.at("status").get<std::string>() != specifier) continue;
                     std::cout << "[" << task.at("id") << "] "
                     << task.at("description").get<std::string>() << std::endl;
-                ]
+                }
 
             } else { // no specifier, default behaviour == just list all
                 for (const auto& task: data.at("tasks")) {
