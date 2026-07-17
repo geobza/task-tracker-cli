@@ -21,15 +21,33 @@
 // Main Function --> Handles Input
 //#include <nlohmann/json.hpp>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <ctime>
 #include <stdio.h>
 #include <utility>
 #include "Task.h"
 #include <unordered_map>
+#include <nlohmann/json.hpp>
 
-//using json = nlohmann::json;
+using json = nlohmann::json;
 
+json load_tasks(const std::string& filepath) {
+    std::ifstream in(filepath);
+    if (!in.is_open()) {
+        json j;
+        j["tasks"] = json::array();
+        j["last_id"] = 0;
+        return j;
+    }
+    json data;
+    try {
+        in >> data;
+    } catch (const json::parse_error& e) {
+        std::cerr << "Failed to parse " << filepath << ": " << e.what() << std::endl;
+    }
+    return data;
+}
 
 enum class SpecifierType {
     NONE,
@@ -52,17 +70,6 @@ static const std::unordered_map<std::string, Command> commands = {
     {"mark-done",         {"mark-done", 3, SpecifierType::TASK_ID}},
     {"list",              {"list", 2, SpecifierType::STATUS}},
 };
-
-
-//static const std::map<std::string, int> commands = {{"add", 3}, {"update", 4}, {"delete", 3}, {"mark-in-progress", 3}, {"mark-done", 3}, {"list", 2}};
-
-/* HELPER FUNCTIONS
- *
- *
- *
- *
- *
- */
 
 
 bool validate_specifier(SpecifierType type, const std::string& specifier) {
@@ -119,6 +126,7 @@ bool error_checking(int argc, char *argv[]) {;
             if (argc > threshold) {
                 throw "Error, too many args. \n";
             }
+            return true;
         }
     } catch (const char* msg) {
         std::cout << msg;
@@ -141,7 +149,7 @@ void print_info(int argc, char *argv[]) {
                 const Command& cmd = it->second;
                 std::cout << "[COMMAND NAME: " << cmd.name << "]" << std::endl;
                 std::cout << "[COMMAND ARGC_THRESHOLD: " << cmd.argc_threshold << "]" << std::endl;
-                //std::cout << "[COMMAND EXPECTED_SPECIFIER " << cmd.expected_specifier << "]" << std::endl;
+                //std::cout << "[COMMAND EXPECTED_SPECIFIER " << cmd.expected_specifier << "]" << std::endl; does not work for now
             }
         }
     }
@@ -155,14 +163,14 @@ int main(int argc, char *argv[]) {
     if (error_checking(argc, argv)) {
 
         std::string action = std::string(argv[1]);
-        std::string specifier = std::string(argv[2]);
+        std::string specifier = (argc > 2) ? std::string(argv[2]) : std::string();
 
 
         if (action == "add") {
 
             std::cout << "[SUCCESS]: Task added successfully (ID: " << ")" << std::endl;
             return 0;
-
+        }
         if (action == "update") {
 
 
@@ -177,7 +185,7 @@ int main(int argc, char *argv[]) {
 
         }
         if (action == "list") {
-            if (argc == 2) { // sub-specifier exists
+            if (argc > 2) { // sub-specifier exists
                 if (specifier == "done") {
 
                 }
@@ -188,13 +196,15 @@ int main(int argc, char *argv[]) {
 
                 }
             } else { // no specifier, default behaviour == just list all
-
+                json data = load_tasks("task-tracking.json");
+                for (const auto& task: data.at("tasks")) {
+                    std::cout << "[" << task.at("id") << "] "
+                        << task.at("description")
+                        << " (" << task.at("status") << ")"
+                        << std::endl;
+                }
             }
-
-
-        }
         }
     }
-
     return 0;
 }
