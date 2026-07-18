@@ -30,6 +30,7 @@
 #include "Task.h"
 #include <unordered_map>
 #include <nlohmann/json.hpp>
+#include <ctime>
 
 using json = nlohmann::json;
 
@@ -48,6 +49,11 @@ json load_tasks(const std::string& filepath) { // load the json file
         std::cerr << "Failed to parse " << filepath << ": " << e.what() << std::endl;
     }
     return data;
+}
+
+void save_tasks(const std::string& filepath, const json& data) {
+    std::ofstream out(filepath);
+    out << data.dump(4);
 }
 
 enum class SpecifierType {
@@ -177,9 +183,26 @@ int main(int argc, char *argv[]) {
             // To-Do
         }
         if (action == "mark-in-progress") {
-
+            time_t timestamp;
+            time(&timestamp);
+            for (auto& task: data["tasks"]) {
+                if (task.at("id").is_null()) continue;
+                if (task.at("id").get<int>() == id_specifier) {
+                    task["status"] = "in-progress";
+                    task["updatedAt"] = ctime(&timestamp);
+                }
+            }
         }
         if (action == "mark-done") {
+            time_t timestamp;
+            time(&timestamp);
+            for (auto& task: data["tasks"]) {
+                if (task.at("id").is_null()) continue;
+                if (task.at("id").get<int>() == id_specifier) {
+                    task["status"] = "done";
+                    task["updatedAt"] = ctime(&timestamp);
+                }
+            }
 
         }
         if  (action == "delete" && argc > 2) { // both expect id
