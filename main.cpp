@@ -73,7 +73,7 @@ static const std::unordered_map<std::string, Command> commands = {
 };
 
 
-bool validate_specifier(SpecifierType type, const std::string& specifier) {
+bool validate_specifier(SpecifierType type, const std::string& specifier) { // will be used to check if the sub-specifier is present or not
     switch (type) {
         case SpecifierType::NONE:
             return true;
@@ -135,8 +135,6 @@ bool error_checking(int argc, char *argv[]) {;
     return false;
 }
 
-
-
 void print_info(int argc, char *argv[]) {
     std::cout << "[DEBUGGING INFORMATION]" << std::endl;
     std::cout << "[ARG COUNT]: " << argc << std::endl;
@@ -156,35 +154,52 @@ void print_info(int argc, char *argv[]) {
     }
 }
 
-
 int main(int argc, char *argv[]) {
 
     print_info(argc, argv);
-
     if (error_checking(argc, argv)) {
 
         std::string action = std::string(argv[1]);
         std::string specifier = (argc > 2) ? std::string(argv[2]) : std::string();
+        int id_specifier = -1;
         json data = load_tasks("task-tracking.json");
 
 
-        if (action == "add") {
+        if (action == "add") { // expects string description
 
             std::cout << "[SUCCESS]: Task added successfully (ID: " << ")" << std::endl;
             return 0;
         }
-        if (action == "update") {
-
-
+        if (action == "update") { // expects id, and string description
+            // To-Do
         }
-        if (action == "delete") {
-
+        if (action == "delete") { // expects id
+            // To-Do
         }
         if (action == "mark-in-progress") {
 
         }
         if (action == "mark-done") {
 
+        }
+        if  (action == "delete" && argc > 2) { // both expect id
+            try {
+                id_specifier = std::stoi(argv[2]);
+            } catch (const std::invalid_argument&) {
+                std::cerr << "Error: task ID must be a number. \n" << std::endl;
+                return 1;
+            } catch (const std::out_of_range&) {
+                std::cerr << "Error: task ID out of range. \n" << std::endl;
+                return 1;
+            }
+            auto& tasks = data["tasks"];
+            for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+                if (it->at("id").is_null()) continue;  // skip bad entries to avoid err
+                if (it->at("id").get<int>() == id_specifier) {
+                    tasks.erase(it);
+                    break;
+                }
+            }
         }
         if (action == "list") {
             if (argc > 2) { // sub-specifier exists, match and loop
@@ -193,7 +208,6 @@ int main(int argc, char *argv[]) {
                     std::cout << "[" << task.at("id") << "] "
                     << task.at("description").get<std::string>() << std::endl;
                 }
-
             } else { // no specifier, default behaviour == just list all
                 for (const auto& task: data.at("tasks")) {
                     std::cout << "[" << task.at("id") << "] "
