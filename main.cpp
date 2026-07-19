@@ -18,8 +18,10 @@
  * List All Tasks In Progress
 */
 
-// Main Function --> Handles Input
-//#include <nlohmann/json.hpp>
+/* Review Diff: data["tasks"] vs data.at("tasks") error handling
+ *
+ *
+ */
 #include <iostream>
 #include <fstream>
 #include <ostream>
@@ -79,7 +81,7 @@ static const std::unordered_map<std::string, Command> commands = {
 };
 
 
-bool validate_specifier(SpecifierType type, const std::string& specifier) { // will be used to check if the sub-specifier is present or not
+bool validate_specifier(SpecifierType type, const std::string& specifier) { // will be used to check if the sub-specifier is present or not (might not be needed?)
     switch (type) {
         case SpecifierType::NONE:
             return true;
