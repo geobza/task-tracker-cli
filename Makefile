@@ -5,20 +5,20 @@
 #FILE_URL := https://raw.githubusercontent.com/nlohmann/json/refs/heads/develop/single_include/nlohmann/json.hpp
 
 CXX := g++
-CXXFLAGS := -std=c++11 -Wall -I$(shell brew --prefix nlohmann-json)/include
+CXXFLAGS := -std=c++11 -Wall -Iinclude
 SOURCES := main.cpp
 OBJECTS := $(SOURCES:.cpp=.o)
 
 JSON_HEADER := include/nlohmann/json.hpp
 JSON_URL := https://raw.githubusercontent.com/nlohmann/json/refs/heads/develop/single_include/nlohmann/json.hpp
 
+all: $(JSON_HEADER) $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o main $(OBJECTS)
+
 $(JSON_HEADER):
 	@echo "Downloading nlohmann/json.hpp..."
 	@mkdir -p include/nlohmann
 	curl -L -o $(JSON_HEADER) $(JSON_URL)
-
-all: $(JSON_HEADER) $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o main $(OBJECTS) 
 
 clean:
 	rm -f main $(OBJECTS)
