@@ -29,7 +29,6 @@
 #include <ctime>
 #include <stdio.h>
 #include <utility>
-#include "Task.h"
 #include <unordered_map>
 #include <nlohmann/json.hpp>
 #include <ctime>
@@ -182,7 +181,11 @@ int main(int argc, char *argv[]) {
             // To-Do
         }
         if (action == "delete") { // expects id
-            // To-Do
+            for (const auto& task: data["tasks"]) {
+                if (task.at("id").get<int>() == id_specifier) {
+                    //task.erase()
+                }
+            }
         }
         if (action == "mark-in-progress") {
             time_t timestamp;
