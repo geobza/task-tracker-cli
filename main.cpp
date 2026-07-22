@@ -28,6 +28,8 @@
 #include <string>
 #include <ctime>
 #include <stdio.h>
+#include <system_error>
+#include <type_traits>
 #include <utility>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
@@ -163,6 +165,8 @@ void print_info(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 
+    // Add Helper Function To Remove Boilerplate
+
     print_info(argc, argv);
     if (error_checking(argc, argv)) {
 
@@ -170,6 +174,16 @@ int main(int argc, char *argv[]) {
         std::string specifier = (argc > 2) ? std::string(argv[2]) : std::string();
         int id_specifier = -1;
         json data = load_tasks("task-tracking.json");
+        const Command* cmd = find_command(action);
+
+        if (cmd->expected_specifier == SpecifierType::TASK_ID && argc > 2) {
+            try {
+                id_specifier = std::stoi(argv[2]);
+            } catch (...) {
+                std::cerr << "Error: task ID must be a number. \n";
+                return 1;
+            }
+        }
 
 
         if (action == "add") { // expects string description
@@ -178,15 +192,31 @@ int main(int argc, char *argv[]) {
             return 0;
         }
         if (action == "update") { // expects id, and string description
-            // To-Do
-        }
-        if (action == "delete") { // expects id
-            for (const auto& task: data["tasks"]) {
+            if (argc < 4) {
+                std::cerr << "Error: update requires an ID and a description. \n";
+            }
+            std::string new_description = argv[3];
+
+            time_t timestamp;
+            time(&timestamp);
+            bool found = false;
+            for (auto& task: data["tasks"]) {
+                if (task.at("id").is_null()) continue;
                 if (task.at("id").get<int>() == id_specifier) {
-                    //auto erase_task = data.erase(std::to_string(id_specifier)); // two delete functions, fix this
+                    task["description"] = new_description;
+                    task["updatedAt"] = ctime(&timestamp);
+                    found = true;
+                    break;
                 }
             }
+            if (!found) {
+                std::cerr << "Error: no task with ID " << id_specifier << "\n.";
+                return 1;
+            }
+            save_tasks("task-tracking.json", data);
+            std::cout << "[SUCCESS]: Task " << id_specifier << " updated.\n";
         }
+
         if (action == "mark-in-progress") {
             time_t timestamp;
             time(&timestamp);
