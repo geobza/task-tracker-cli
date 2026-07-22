@@ -183,7 +183,7 @@ int main(int argc, char *argv[]) {
         if (action == "delete") { // expects id
             for (const auto& task: data["tasks"]) {
                 if (task.at("id").get<int>() == id_specifier) {
-                    //task.erase()
+                    auto erase_task = data.erase(std::to_string(id_specifier)); // problem is abort, but recognizing
                 }
             }
         }
