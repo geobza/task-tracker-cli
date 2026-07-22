@@ -165,10 +165,10 @@ void print_info(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 
-    // Add Helper Function To Remove Boilerplate
+    // TODO:
 
-    print_info(argc, argv);
-    if (error_checking(argc, argv)) {
+    print_info(argc, argv); // debugging information
+    if (error_checking(argc, argv)) { // if passes error checking, good to go
 
         std::string action = std::string(argv[1]);
         std::string specifier = (argc > 2) ? std::string(argv[2]) : std::string();
@@ -217,28 +217,17 @@ int main(int argc, char *argv[]) {
             std::cout << "[SUCCESS]: Task " << id_specifier << " updated.\n";
         }
 
-        if (action == "mark-in-progress") {
+        if (action == "mark-in-progress" || action == "mark-done") {
             time_t timestamp;
             time(&timestamp);
             for (auto& task: data["tasks"]) {
                 if (task.at("id").is_null()) continue;
                 if (task.at("id").get<int>() == id_specifier) {
-                    task["status"] = "in-progress";
+                    task["status"] = action;
                     task["updatedAt"] = ctime(&timestamp);
                 }
             }
-        }
-        if (action == "mark-done") {
-            time_t timestamp;
-            time(&timestamp);
-            for (auto& task: data["tasks"]) {
-                if (task.at("id").is_null()) continue;
-                if (task.at("id").get<int>() == id_specifier) {
-                    task["status"] = "done";
-                    task["updatedAt"] = ctime(&timestamp);
-                }
-            }
-
+            // TODO: add success checking
         }
         if  (action == "delete" && argc > 2) { // both expect id
             try {
