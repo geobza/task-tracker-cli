@@ -33,7 +33,7 @@
 #include <nlohmann/json.hpp>
 #include <ctime>
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 
 json load_tasks(const std::string& filepath) { // load the json file
     std::ifstream in(filepath);
@@ -183,7 +183,7 @@ int main(int argc, char *argv[]) {
         if (action == "delete") { // expects id
             for (const auto& task: data["tasks"]) {
                 if (task.at("id").get<int>() == id_specifier) {
-                    auto erase_task = data.erase(std::to_string(id_specifier)); // problem is abort, but recognizing
+                    //auto erase_task = data.erase(std::to_string(id_specifier)); // two delete functions, fix this
                 }
             }
         }
@@ -221,13 +221,21 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
             auto& tasks = data["tasks"];
+            bool found = false;
             for (auto it = tasks.begin(); it != tasks.end(); ++it) {
                 if (it->at("id").is_null()) continue;  // skip bad entries to avoid err
                 if (it->at("id").get<int>() == id_specifier) {
-                    tasks.erase(it);
+                    it = tasks.erase(it);
+                    found = true;
                     break;
                 }
             }
+            if (!found) {
+                std::cerr << "Error: no task with ID " << id_specifier << "\n.";
+                return 1;
+            }
+            save_tasks("task-tracking.json", data);
+            std::cout << "[SUCCESS]: Task " << id_specifier << " deleted. \n" << std::endl;
         }
         if (action == "list") {
             if (argc > 2) { // sub-specifier exists, match and loop
