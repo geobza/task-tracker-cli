@@ -2,18 +2,11 @@
     "tasks": [
         {
             "id": 1,
-            "description": "hello",
-            "status": "in-progress",
-            "createdAt": null,
-            "updatedAt": "Wed Jul 22 16:06:11 2026\n"
-        },
-        {
-            "id": 3,
-            "description": "Take Anna on date",
+            "description": "Testing",
             "status": "todo",
-            "createdAt": "Wed Jul 22 16:25:19 2026\n",
-            "updatedAt": "Wed Jul 22 16:25:19 2026\n"
+            "createdAt": "Wed Jul 22 16:37:45 2026\n",
+            "updatedAt": "Wed Jul 22 16:37:45 2026\n"
         }
     ],
-    "last_id": 3
+    "last_id": 1
 }

@@ -22,6 +22,33 @@
  *
  *
  */
+
+/* Features to Add:
+ *
+ * [QUICK FEATURES]
+ * Due Dates
+ * Priority Levels
+ * Tags / Categories
+ * Search
+ * Sorting Flags
+ * Undo Delete
+ *
+ * [Quality of Life]
+ * Colored Terminal Output
+ * Table Formatting
+ * Config File
+ * --help usage text
+ *
+ * [CODE QUALITY]
+ * Extract a Task struct/class
+ * Centralize ID parsing
+ * Wire up validate_specifier
+ * Replace ctime
+ * Split into files
+ * Unit tests
+ */
+
+
 #include <iostream>
 #include <fstream>
 #include <ostream>
