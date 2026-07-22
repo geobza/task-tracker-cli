@@ -172,6 +172,8 @@ int main(int argc, char *argv[]) {
         std::string action = std::string(argv[1]);
         std::string specifier = (argc > 2) ? std::string(argv[2]) : std::string();
         int id_specifier = -1;
+        time_t timestamp;
+        time(&timestamp);
         json data = load_tasks("task-tracking.json");
         const Command* cmd = find_command(action);
 
@@ -188,7 +190,24 @@ int main(int argc, char *argv[]) {
 
         if (action == "add") { // expects string description
 
-            std::cout << "[SUCCESS]: Task added successfully (ID: " << ")" << std::endl;
+            // determine new id from last_id (fallback to 0 if missing/null)
+            int next_id = 1;
+            if (data.contains("last_id") && !data["last_id"].is_null()) {
+                next_id = data["last_id"].get<int>() + 1;
+            }
+
+            json new_task;
+            new_task["id"] = next_id;
+            new_task["description"] = specifier;
+            new_task["status"] = "todo";
+            new_task["createdAt"] = ctime(&timestamp);
+            new_task["updatedAt"] = ctime(&timestamp);
+
+            data["tasks"].push_back(new_task);
+            data["last_id"] = next_id;
+
+            save_tasks("task-tracking.json", data);
+            std::cout << "[SUCCESS]: Task added successfully (ID: " << next_id << ")" << std::endl;
             return 0;
         }
         if (action == "update") { // expects id, and string description
@@ -197,8 +216,6 @@ int main(int argc, char *argv[]) {
             }
             std::string new_description = argv[3];
 
-            time_t timestamp;
-            time(&timestamp);
             bool found = false;
             for (auto& task: data["tasks"]) {
                 if (task.at("id").is_null()) continue;
@@ -218,8 +235,6 @@ int main(int argc, char *argv[]) {
         }
 
         if (action == "mark-in-progress" || action == "mark-done") {
-            time_t timestamp;
-            time(&timestamp);
             bool found = false;
             for (auto& task: data["tasks"]) {
                 if (task.at("id").is_null()) continue;

@@ -8,12 +8,12 @@
             "updatedAt": "Wed Jul 22 16:06:11 2026\n"
         },
         {
-            "id": 2,
-            "description": "hello",
-            "status": null,
-            "createdAt": null,
-            "updatedAt": "Wed Jul 22 12:53:16 2026\n"
+            "id": 3,
+            "description": "Take Anna on date",
+            "status": "todo",
+            "createdAt": "Wed Jul 22 16:25:19 2026\n",
+            "updatedAt": "Wed Jul 22 16:25:19 2026\n"
         }
     ],
-    "last_id": null
+    "last_id": 3
 }
