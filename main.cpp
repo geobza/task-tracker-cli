@@ -165,7 +165,6 @@ void print_info(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 
-    // TODO:
 
     print_info(argc, argv); // debugging information
     if (error_checking(argc, argv)) { // if passes error checking, good to go
@@ -176,6 +175,7 @@ int main(int argc, char *argv[]) {
         json data = load_tasks("task-tracking.json");
         const Command* cmd = find_command(action);
 
+        // TODO: potentially make this a seperate function?
         if (cmd->expected_specifier == SpecifierType::TASK_ID && argc > 2) {
             try {
                 id_specifier = std::stoi(argv[2]);
@@ -220,14 +220,21 @@ int main(int argc, char *argv[]) {
         if (action == "mark-in-progress" || action == "mark-done") {
             time_t timestamp;
             time(&timestamp);
+            bool found = false;
             for (auto& task: data["tasks"]) {
                 if (task.at("id").is_null()) continue;
                 if (task.at("id").get<int>() == id_specifier) {
-                    task["status"] = action;
+                    task["status"] = action.substr(5);
                     task["updatedAt"] = ctime(&timestamp);
+                    found = true;
                 }
             }
-            // TODO: add success checking
+            if (!found) {
+                std::cerr << "Error: no task with ID " << id_specifier << "\n.";
+                return 1;
+            }
+            save_tasks("task-tracking.json", data);
+            std::cout << "[SUCCESS]: Task " << id_specifier << " updated.\n";
         }
         if  (action == "delete" && argc > 2) { // both expect id
             try {
